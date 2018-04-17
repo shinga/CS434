@@ -92,7 +92,7 @@ def problem1():
     # Learning Rate
     learn = 0.000001
     # Iterations
-    epoch = 65
+    epoch = 10
 
     la = 100
 
@@ -128,7 +128,7 @@ def problem1():
 # Plots into a png file
 def plot(x, y, fileName, labelName):
     plt.plot(x, y, label=labelName)
-    plt.legend(loc=4, prop={'size:6'})
+    plt.legend(loc=4, prop={'size:10'})
     plt.savefig(fileName)
     return
 
