@@ -2,7 +2,7 @@
 # @Date:   2018-04-12T19:20:42-07:00
 # @Filename: prob1.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-04-16T04:08:56-07:00
+# @Last modified time: 2018-04-16T17:30:26-07:00
 
 import numpy
 import matplotlib as mpl
@@ -20,9 +20,32 @@ def getValues(fileName):
     x = numpy.delete(x, 14, 1)
     return(x, y)
 
+def addRandFeature(d, data, y):
+    x = numpy.concatenate((data, y), axis=1)
+    # x = data
+    xAvg = numpy.mean(x, axis=0)
+    xStd = numpy.std(x, axis=0)
+    xAvg = numpy.asarray(xAvg)
+    xStd = numpy.asarray(xStd)
+
+    randFeat = numpy.zeros((d, x.shape[1]))
+    for n in range(d):
+        for i in range(len(xAvg)):
+            randFeat[n][i] = numpy.random.normal(xAvg[0][i], xStd[0][i])
+    x = numpy.vstack((randFeat, x))
+
+    y = numpy.asmatrix(x[:,13]).T
+    x = numpy.delete(x, 14, 1)
+    return (x, y)
+
+
+
 def weight(x, y):
     # (XT * X)^-1
+    # print x.shape
     xTx = numpy.dot(x.T, x)
+    # print "Hello"
+    # print xTx.shape
     xTxInv = numpy.mat(xTx).I
 
     # XT * Y
@@ -73,13 +96,26 @@ def main():
 
     (xTestND, yTestND) = getValuesNoDummy("housing_test.txt")
     sseTestND = sse(xTestND, yTestND, wTrainND)
-    sseTestND = sse(xTestND, yTestND, wTrainND)
 
     print "Training ASE with no dummy:"
     print sseTrainND
     print "Testing ASE with no dummy:"
     print sseTestND
 
+    # Problem 4
+
+    (xRand, yRand) = addRandFeature(10, xTrain, yTrain)
+    wRand = weight(xRand, yRand.T)
+    sseRand = sse(xTrain, yTrain, wRand)
+    sseRandTest = sse(xTest, yTest, wRand)
+
+    print "Problem 4."
+    print "Weight vector:"
+    print wRand.reshape(1,14)
+    print "Training ASE:"
+    print sseRand
+    print "Testing ASE:"
+    print sseRandTest
 
 
 if __name__ == "__main__":
