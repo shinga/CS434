@@ -2,7 +2,7 @@
 # @Date:   2018-04-12T19:20:42-07:00
 # @Filename: prob1.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-04-16T20:44:35-07:00
+# @Last modified time: 2018-04-16T21:05:16-07:00
 import matplotlib
 matplotlib.use('Agg')
 
@@ -127,9 +127,9 @@ def main():
     print "Weight vector:"
     print wRand.reshape(1,14)
     print "Training ASE:"
-    print sseRand
+    print sseRand[0]
     print "Testing ASE:"
-    print sseRandTest
+    print sseRandTest[0]
 
     return
 
