@@ -108,9 +108,6 @@ def problem1():
     (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 0.1)
     plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=0.1")
     plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=0.1")
-    (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 1)
-    plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=1")
-    plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=1")
     (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 10)
     plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=10")
     plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=10")
@@ -131,7 +128,7 @@ def problem1():
 # Plots into a png file
 def plot(x, y, fileName, labelName):
     plt.plot(x, y, label=labelName)
-    plt.legend(loc=4)
+    plt.legend(loc=4, prop={'size:6'})
     plt.savefig(fileName)
     return
 
