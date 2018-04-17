@@ -2,7 +2,7 @@
 # @Date:   2018-04-12T19:20:42-07:00
 # @Filename: prob1.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-04-16T17:30:26-07:00
+# @Last modified time: 2018-04-16T20:23:56-07:00
 
 import numpy
 import matplotlib as mpl
@@ -30,19 +30,21 @@ def addRandFeature(d, data, y):
 
     randFeat = numpy.zeros((d, x.shape[1]))
     for n in range(d):
-        for i in range(len(xAvg)):
-            randFeat[n][i] = numpy.random.normal(xAvg[0][i], xStd[0][i])
+        for i in range(14):
+            # randFeat[n][i] = xAvg[0][i] + (xStd[0][i] * numpy.random.standard_normal(1))
+            randFeat[n][i] =  numpy.random.normal(xAvg[0][i], xStd[0][i])
+            # jifew =  numpy.random.standard_normal(1)
+            # print xStd[0][i] *
     x = numpy.vstack((randFeat, x))
 
     y = numpy.asmatrix(x[:,13]).T
     x = numpy.delete(x, 14, 1)
-    return (x, y)
+    return (x, y.T)
 
 
 
 def weight(x, y):
     # (XT * X)^-1
-    # print x.shape
     xTx = numpy.dot(x.T, x)
     # print "Hello"
     # print xTx.shape
@@ -50,7 +52,6 @@ def weight(x, y):
 
     # XT * Y
     xTy = numpy.dot(x.T, y)
-
     # Put it together: (XT * T)^-1 * XT*Y
     w = numpy.dot(xTxInv, xTy)
     return w
@@ -103,9 +104,9 @@ def main():
     print sseTestND
 
     # Problem 4
-
-    (xRand, yRand) = addRandFeature(10, xTrain, yTrain)
-    wRand = weight(xRand, yRand.T)
+    for r in [2,4,6,8,10]:
+        (xRand, yRand) = addRandFeature(r, xTrain, yTrain)
+    wRand = weight(xRand, yRand)
     sseRand = sse(xTrain, yTrain, wRand)
     sseRandTest = sse(xTest, yTest, wRand)
 
