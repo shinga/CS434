@@ -2,10 +2,12 @@
 # @Date:   2018-04-12T19:20:42-07:00
 # @Filename: prob1.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-04-16T20:23:56-07:00
+# @Last modified time: 2018-04-16T20:44:35-07:00
+import matplotlib
+matplotlib.use('Agg')
 
 import numpy
-import matplotlib as mpl
+import matplotlib.pyplot as plt
 numpy.set_printoptions(precision=4, threshold=numpy.inf)
 
 # Returns: X is features data, Y is housing price
@@ -104,11 +106,22 @@ def main():
     print sseTestND
 
     # Problem 4
-    for r in [2,4,6,8,10]:
-        (xRand, yRand) = addRandFeature(r, xTrain, yTrain)
-    wRand = weight(xRand, yRand)
-    sseRand = sse(xTrain, yTrain, wRand)
-    sseRandTest = sse(xTest, yTest, wRand)
+    sseRand = numpy.zeros(5)
+    sseRandTest = numpy.zeros(5)
+    for r in range(5):
+        (xRand, yRand) = addRandFeature((r*2), xTrain, yTrain)
+        wRand = weight(xRand, yRand)
+        sseRand[r] = numpy.asarray(sse(xTrain, yTrain, wRand))
+        sseRandTest[r] = numpy.asarray(sse(xTest, yTest, wRand))
+    plt.subplot(2, 1, 1)
+    plt.title('Random Features ')
+    plt.ylabel('ASE')
+
+    plot(range(0,10,2), sseRand.flatten(), "randfeatures.png", "Training")
+    plt.subplot(2, 1, 2)
+    plt.ylabel('ASE')
+    plt.xlabel('Number of Features')
+    plot(range(0,10,2), sseRandTest.flatten(), "randfeatures.png", "Testing")
 
     print "Problem 4."
     print "Weight vector:"
@@ -117,6 +130,15 @@ def main():
     print sseRand
     print "Testing ASE:"
     print sseRandTest
+
+    return
+
+
+def plot(x, y, fileName, labelName):
+    plt.plot(x, y, label=labelName)
+    plt.legend(loc=4, prop={'size':10})
+    plt.savefig(fileName)
+    return
 
 
 if __name__ == "__main__":

@@ -2,14 +2,13 @@
 # @Date:   2018-04-12T17:23:28-07:00
 # @Filename: prob2.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-04-16T19:06:16-07:00
+# @Last modified time: 2018-04-16T21:02:17-07:00
 import matplotlib
 matplotlib.use('Agg')
 
 import numpy as np
 import csv
 import matplotlib.pyplot as plt
-import time
 
 def main():
     #stuff
@@ -92,7 +91,7 @@ def problem1():
     # Learning Rate
     learn = 0.000001
     # Iterations
-    epoch = 10
+    epoch = 65
 
     la = 100
 
@@ -108,18 +107,18 @@ def problem1():
     (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 0.1)
     plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=0.1")
     plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=0.1")
-    (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 10)
-    plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=10")
-    plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=10")
+    # (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 10)
+    # plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=10")
+    # plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=10")
     (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 100)
     plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=100")
     plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=100")
     (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 1000)
     plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=1000")
     plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=1000")
-    (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 10000)
-    plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=10000")
-    plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=10000")
+    # (coefB, accuracyB, accuracyTestB) = trainBatch(x, learn, epoch, w, l, xTest, lTest, 10000)
+    # plot(range(epoch), accuracyB, "acctrain2.png", "Training data lambda=10000")
+    # plot(range(epoch), accuracyTestB, "acctrain2.png", "Testing data lambda=10000")
 
 
 
@@ -128,7 +127,9 @@ def problem1():
 # Plots into a png file
 def plot(x, y, fileName, labelName):
     plt.plot(x, y, label=labelName)
-    plt.legend(loc=4, prop={'size:10'})
+    plt.legend(loc=4, prop={'size':10})
+    plt.xlabel('Iterations')
+    plt.ylabel('Accuracy')
     plt.savefig(fileName)
     return
 
