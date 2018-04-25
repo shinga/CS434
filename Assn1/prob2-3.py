@@ -2,7 +2,7 @@
 # @Date:   2018-04-12T17:23:28-07:00
 # @Filename: prob2.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-04-19T18:10:22-07:00
+# @Last modified time: 2018-04-19T18:04:02-07:00
 import matplotlib
 matplotlib.use('Agg')
 
@@ -55,17 +55,44 @@ def trainBatch(data, learnRate, epoch, zeros, label, xTest, lTest, l):
             # regularizator = (0.5 * np.dot(w.T, w) * l)
             regularizator = np.multiply(l, w)
             error = label[row] - y
+            sumError += error**2
             odds = y * (1-y) # This makes the learning less sporadic
-            # odds=1
             regError = error + regularizator
             learnError = regError * learnRate * odds
+            # N <- N + (yhat - y)x
+            nabla = np.add(nabla, np.multiply(error, data[row].reshape(256,1))) # this took me 5ever
+        acc[e] = test(data, label, w)
+        accTest[e] = test(xTest, lTest, w)
+        w = np.subtract(w, np.multiply(learnRate, nabla))
+        print('epoch: %d, lambda: %.2f, learn rate: %.1e, SSE: %.3f, accuracy: %.4f, accuracyTest: %.4f' % (e, l, learnRate, sumError, acc[e], accTest[e]))
+    return (w, acc, accTest)
+
+
+def trainBatch(data, learnRate, epoch, zeros, label, xTest, lTest, l):
+    w = zeros
+    acc = np.zeros((epoch,), dtype=float)
+    accTest = np.zeros((epoch,), dtype=float)
+    for e in range(epoch):
+        sumError = 0
+        nabla = w
+        for row in range(len(data)):
+            y = sigmoidFunct(w, data[row].reshape(256,1))
+            # regularizator = (0.5 * np.dot(w.T, w) * l)
+            error = y - label[row]
+            # sumError += error**2
+            odds = y * (1-y) # This makes the learning less sporadic
+            # odds=1
+            learnError = error * odds
             # N <- N + (yhat - y)x
             nabla = np.add(nabla, np.multiply(learnError, data[row].reshape(256,1))) # this took me 5ever
         acc[e] = test(data, label, w)
         accTest[e] = test(xTest, lTest, w)
-        w = nabla
+        regularizator = np.multiply(l, w)
+        w = np.subtract(w, np.multiply(learnRate, np.add(nabla, regularizator)))
         print('epoch: %d, lambda: %.2f, learn rate: %.1e, accuracy: %.4f, accuracyTest: %.4f' % (e, l, learnRate, acc[e], accTest[e]))
     return (w, acc, accTest)
+
+
 
 
 # Tests multiple images (x is the test file data) over their actual numbers (l)
