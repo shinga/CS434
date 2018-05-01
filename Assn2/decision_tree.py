@@ -2,7 +2,7 @@
 # @Date:   2018-04-29T16:41:18-07:00
 # @Filename: decision_tree.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-04-30T19:11:20-07:00
+# @Last modified time: 2018-04-30T19:42:57-07:00
 
 import matplotlib
 matplotlib.use('Agg')
@@ -134,7 +134,7 @@ def getError(theta, column, data):
     for s in smaller:
         if (s[0] == 1):
             numberWrong += 1
-    return numberWrong
+    return (numberWrong, greater, smaller)
 
 def getLeftError(theta, column, data):
     numberWrong = 0
@@ -170,6 +170,7 @@ def getRightError(theta, column, data):
     else:
         return numberWrong
 
+
 def doDepth(data, currentDepth, depth):
     rootNode = Node()
     rootNode.depth = currentDepth
@@ -187,6 +188,25 @@ def doDepth(data, currentDepth, depth):
             return rootNode
     else:
         return rootNode
+
+def testData(data, root):
+    numberWrong = 0
+    (theta, col) = root.getVals()
+    (wrong, g, s) = getError(theta, col, data)
+    if (root.isLeaf()):
+        return numberWrong
+    elif (root.left.isLeaf() and root.right.isLeaf()):
+        return wrong
+    elif root.left.isLeaf():
+        numberWrong += getLeftError(theta, col, data)
+        numberWrong += testData(s, root.right)
+    elif root.right.isLeaf():
+        numberWrong += getRightError(theta, col, data)
+        numberWrong += testData(g, root.left)
+    else:
+        numberWrong += testData(g, root.left)
+        numberWrong += testData(s, root.right)
+    return numberWrong
 
 def getTreeError(root):
     numberWrong = 0
@@ -228,10 +248,9 @@ def main():
         train.append(rate)
 
         print "Testing data with a depth of %d" % depth
-        root = doDepth(dataTest, 0, depth)
-        numWrong = getTreeError(root)
-        print "Number Wrong: %d / %d" % (numWrong, dataTest.shape[0])
-        rate = float(numWrong) / dataTest.shape[0]
+        n = testData(dataTest, root)
+        print "Test Wrong: %d / %d" % (n, dataTest.shape[0])
+        rate = float(n) / dataTest.shape[0]
         test.append(rate)
 
     plt.plot(range(1,7), train, 'bx-', label="Training Error")
