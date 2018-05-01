@@ -2,7 +2,7 @@
 # @Date:   2018-04-25T17:07:51-07:00
 # @Filename: model_select.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-04-29T16:40:26-07:00
+# @Last modified time: 2018-04-29T22:21:05-07:00
 
 import matplotlib
 matplotlib.use('Agg')
@@ -175,6 +175,7 @@ def main():
     plt.plot(range(1,53,2), test, 'rx-', label="Testing Error")
     plt.xlabel('k')
     plt.ylabel('Error rate')
+    plt.legend(loc=4, prop={'size':10})
     plt.savefig("errors.png")
 
 
