@@ -1,8 +1,8 @@
-# @Author: Arthur Shing
+# @Author: Arthur Shing, Monica Sek
 # @Date:   2018-04-29T16:41:18-07:00
 # @Filename: decision_tree.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-04-30T19:42:57-07:00
+# @Last modified time: 2018-04-30T20:42:51-07:00
 
 import matplotlib
 matplotlib.use('Agg')
@@ -47,6 +47,7 @@ def readFile(fileName):
     print str(s) + " loaded"
     return data
 
+# Calculate entropy given probabilities of +1 (p1) and negative 1 (pn1)
 def entropy(p1, pn1):
     if(p1 == 0 or pn1 == 0):
         return 0
@@ -57,7 +58,8 @@ def entropy(p1, pn1):
     return Hs
 
 
-
+# Count the number of 1s in a column
+# Return probability of 1 and -1 in the column (p1, pn1)
 def countOnes(column):
     numOnes = 0
     numTotal = len(column)
@@ -68,7 +70,8 @@ def countOnes(column):
     pn1 = 1 - p1
     return (p1, pn1)
 
-
+# Find the variable and value that give the most information gain
+# return threshold value, column number, data > threshold, data < threshold, and best information gain
 def findTheta(data):
     xj = 0
     bestInfoGain = 0
@@ -118,7 +121,8 @@ def findTheta(data):
         print "Best info gain: %f | Threshold: %f | var index: %d" % (bestInfoGain, theta, xj)
     return (theta, xj, finalg, finals, bestInfoGain)
 
-
+# Gets number of errors given threshold value, column number, and data
+# Returns number of errors (numberWrong), data > threshold, data < threshold
 def getError(theta, column, data):
     greater = []
     smaller = []
@@ -136,6 +140,7 @@ def getError(theta, column, data):
             numberWrong += 1
     return (numberWrong, greater, smaller)
 
+# Returns number wrong on the left side (the number of errors on the side > threshold)
 def getLeftError(theta, column, data):
     numberWrong = 0
     numberWright = 0
@@ -153,6 +158,7 @@ def getLeftError(theta, column, data):
     else:
         return numberWrong
 
+# Returns number wrong on the right side (the number of errors on the side < threshold)
 def getRightError(theta, column, data):
     numberWrong = 0
     numberWright = 0
@@ -170,7 +176,7 @@ def getRightError(theta, column, data):
     else:
         return numberWrong
 
-
+# Build the binary tree
 def doDepth(data, currentDepth, depth):
     rootNode = Node()
     rootNode.depth = currentDepth
@@ -189,6 +195,7 @@ def doDepth(data, currentDepth, depth):
     else:
         return rootNode
 
+# Test test-data on the binary tree
 def testData(data, root):
     numberWrong = 0
     (theta, col) = root.getVals()
@@ -208,6 +215,7 @@ def testData(data, root):
         numberWrong += testData(s, root.right)
     return numberWrong
 
+# Traverse the tree for error information on training data, built-in when we built the tree
 def getTreeError(root):
     numberWrong = 0
     if root.isLeaf():
@@ -233,12 +241,17 @@ def main():
     dataTest = readFile("knn_test.csv")
 
     # Stump
-    # (thresh, col, g, s, infogain) = findTheta(dataTrain)
-    # print getError(thresh, col, dataTrain)
-    # (thresh, col, g, s, infogain) = findTheta(dataTest)
-    # print getError(thresh, col, dataTest)
+
+    print "Problem 2.1 \nSTUMP: "
+    (thresh, col, g, s, infogain) = findTheta(dataTrain)
+    (placeholder, p, q) = getError(thresh, col, dataTrain)
+    print "Training error rate: %f" % (float(placeholder) / dataTrain.shape[0])
+    (thresh, col, g, s, infogain) = findTheta(dataTest)
+    (placeholder, p, q) = getError(thresh, col, dataTest)
+    print "Testing error rate: %f" % (float(placeholder) / dataTest.shape[0])
     train = []
     test = []
+    print "Problem 2.2"
     for depth in range(1,7):
         print "Training data with a depth of %d" % depth
         root = doDepth(dataTrain, 0, depth)
@@ -261,18 +274,6 @@ def main():
     plt.savefig("decisionTree.png")
     print "Graph saved at 'decisionTree.png'"
 
-
-
-    # tnode = test.right.left.right.left
-    # print tnode.data.T[0]
-    # print getTreeError(tnode)
-    # tnode.printNode()
-    # t = 0
-    # for i in tnode.data.T[0]:
-    #     if i == 1:
-    #         t += 1
-    # print t
-    # print getTreeError(test)
 
     return
 
