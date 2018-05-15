@@ -2,7 +2,7 @@
 # @Date:   2018-05-13T18:57:58-07:00
 # @Filename: prob.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-05-14T12:37:48-07:00
+# @Last modified time: 2018-05-14T16:52:39-07:00
 # Much code grabbed from Markus Koskela,
 # https://github.com/CSCfi/machine-learning-scripts/blob/master/notebooks/pytorch-mnist-mlp.ipynb
 import matplotlib
@@ -39,14 +39,14 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.fc1 = nn.Linear(32*32*3, 100)
-        self.fc1_drop = nn.Dropout(0.2)
+        self.fc1_drop = nn.Dropout(0.2) # TODO: part 3
         # self.fc2 = nn.Linear(50, 50)
         # self.fc2_drop = nn.Dropout(0.2)
         self.fc2 = nn.Linear(100, 10)
 
     def forward(self, x):
         x = x.view(-1, 32*32*3)
-        # x = F.logsigmoid(self.fc1(x))
+        # x = F.logsigmoid(self.fc1(x)) # NOTE: for part 1
         x = F.relu(self.fc1(x))
         x = self.fc1_drop(x)
         # x = F.relu(self.fc2(x))
@@ -102,7 +102,7 @@ plt.imsave("mnist.png",X_train[i,:,:,:].numpy().reshape(32,32,3))
 
 def main():
     LEARNRATE = float(sys.argv[1])
-    optimizer = optim.SGD(model.parameters(), lr=LEARNRATE, momentum=0.5)
+    optimizer = optim.SGD(model.parameters(), lr=LEARNRATE, momentum=0.5) #TODO: part 3 , mmomentum and weight_decay=0
     epochs = 10
 
     lossv, accv = [], []
@@ -112,12 +112,12 @@ def main():
 
     plt.figure(figsize=(5,3))
     plt.plot(np.arange(1,epochs+1), lossv)
-    plt.title('validation loss')
+    plt.title('validation loss at LR = ' + str(LEARNRATE))
     plt.savefig(str(LEARNRATE) + "RELUloss.png")
 
     plt.figure(figsize=(5,3))
     plt.plot(np.arange(1,epochs+1), accv)
-    plt.title('validation accuracy');
+    plt.title('validation accuracy at LR = ' + str(LEARNRATE))
     plt.savefig(str(LEARNRATE) + "RELUacc.png")
 
 
@@ -153,7 +153,7 @@ def validate(loss_vector, accuracy_vector, optimizer):
     val_loss /= len(validation_loader)
     loss_vector.append(val_loss)
 
-    accuracy = 100. * correct / len(validation_loader.dataset)
+    accuracy = 100.0 * float(correct) / float(len(validation_loader.dataset))
     accuracy_vector.append(accuracy)
 
     print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
