@@ -2,7 +2,7 @@
 # @Date:   2018-05-22T15:21:11-07:00
 # @Filename: prob1.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-05-22T18:13:54-07:00
+# @Last modified time: 2018-05-22T18:44:08-07:00
 import matplotlib
 matplotlib.use('Agg')
 
@@ -46,10 +46,12 @@ def kmeans(data, k):
     c = np.asarray(c)
     print c.shape
 
-
+    SSElist = []
     prevSSE = 0
     SSE = 1
-    while prevSSE != SSE:
+    ITERATIONS = 10
+    for i in range(ITERATIONS):
+    # while prevSSE != SSE:
         prevSSE = SSE
         clusterAssignments = assignClusters(data, k, c)
         means = []
@@ -63,7 +65,9 @@ def kmeans(data, k):
         SSE = sum(SSE)
         print SSE
         c = means
+        SSElist.append(SSE)
 
+    return SSElist
 
 
 def reassignCentroid(clusterAssignments):
@@ -79,10 +83,31 @@ def calcDeviation(data, mean):
 
 
 def main():
-    k = 10
     x = loadData("data-1.txt")
     print x.shape
-    kmeans(x, k)
+
+    k = 2
+    sses = kmeans(x, k)
+    plotdis(sses)
+    plt.savefig("sse_part1.png")
+    plt.figure()
+    # part 2
+    sses = []
+    for k in range(2,11):
+        sses.append(kmeans(x,k)[-1])
+
+    # plotdis(sses)
+    plt.plot(range(2,11), sses)
+    plt.xlabel("k")
+    plt.ylabel("SSE")
+    plt.savefig("sse_part2.png")
+
+
+def plotdis(sses, k=2):
+    plt.plot(range(len(sses)), sses, label=("k = " + str(k)))
+    plt.xlabel("Iteration")
+    plt.ylabel("SSE")
+    plt.legend()
     # for i in x:
     #     showinmage(i)
     #     sleep(3)
