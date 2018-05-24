@@ -2,7 +2,7 @@
 # @Date:   2018-05-23T15:53:41-07:00
 # @Filename: prob2.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-05-24T15:02:32-07:00
+# @Last modified time: 2018-05-24T12:02:14-07:00
 import matplotlib
 matplotlib.use('Agg')
 
@@ -24,72 +24,50 @@ def loadData(fileName):
 
 def main():
     x = loadData("data-1.txt")
+    x = x.T
     print x.shape
 
-    mean = np.mean(x, axis=0)
-
+    mean = np.mean(x, axis=1)
+    centeredX = x - x.mean(axis=1)[:, np.newaxis]
     # print mean.shape
     # xa = x - mean
-    cov = np.cov(x.T)
+    cov = np.dot(centeredX, centeredX.T)
     # cov = np.cov(xa.T)
-    # print cov
+    print cov.shape
 
 
     # w = eigenvalues
     # v = eigenvectors
     w, v = np.linalg.eigh(cov)
     index = w.argsort()[::-1]
-    # print index
+    print index
     w = w[index] #sort
     v = v[:,index]
     print("Top 10 Eigen Values: ")
     print w[:10]
     # print v
-    v = v.T
+    print v[:,:10]
     # norm = np.vectorize(normalize)
     # v = norm(v)
-    # v = np.apply_along_axis(normalize, 1, v)
-    # print v[:10]
-    # print v[:10].shape
-    b = []
-    for i in v[:10]:
-        b.append(np.dot(x, i).argsort()[::-1])
-    ind = 101
-    for vector in b:
-        print vector[0]
-        # sorted_x = x[vector]
-        showimage(x[vector[0]], ind)
-        ind += 1
-    # for vector in b:
-    #     print vector[0]
-    #     sorted_x = x[vector]
-    #     showimage(sorted_x[0], ind)
-    #     ind += 1
-    sorted_x = x[b[0]]
 
-
-    # print sorted_x[0]
-    # PRINT
-    # for i in range(10):
-    #     showimage(v[i], i)
-    # showimage(mean, 15)
+    for i in range(10):
+        showimage(v[:,i], i)
+    showimage(mean, 15)
 
 def convertFloat(data):
     return data.real
 
 def normalize(data):
-    # print data
     max = np.amax(data)
-    min = np.amin(data)
     help = np.vectorize(normHelp)
-    return help(data, max, min)
+    return help(data, max)
 
 
-def normHelp(data, max, min):
-    if (float(max) - float(min)) != 0:
-        # print data, max, min
-        return (float(data) - float(min)) / (float(max) - float(min))
-    else: return 0
+def normHelp(data, max):
+    if max != complex(0.0,0.0):
+        return data/max
+    else:
+        return complex(0.0,0.0)
 
 
 
