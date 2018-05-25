@@ -2,7 +2,7 @@
 # @Date:   2018-05-23T15:53:41-07:00
 # @Filename: prob2.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-05-24T15:02:32-07:00
+# @Last modified time: 2018-05-24T21:01:10-07:00
 import matplotlib
 matplotlib.use('Agg')
 
@@ -51,10 +51,17 @@ def main():
     # v = np.apply_along_axis(normalize, 1, v)
     # print v[:10]
     # print v[:10].shape
+
+
+    for i in range(10):
+        showimage(v[i], i)
+    showimage(mean, 15)
+
+
     b = []
     for i in v[:10]:
         b.append(np.dot(x, i).argsort()[::-1])
-    ind = 101
+    ind = 100
     for vector in b:
         print vector[0]
         # sorted_x = x[vector]
@@ -65,14 +72,10 @@ def main():
     #     sorted_x = x[vector]
     #     showimage(sorted_x[0], ind)
     #     ind += 1
-    sorted_x = x[b[0]]
-
+    # sorted_x = x[b[0]]
 
     # print sorted_x[0]
     # PRINT
-    # for i in range(10):
-    #     showimage(v[i], i)
-    # showimage(mean, 15)
 
 def convertFloat(data):
     return data.real
@@ -99,6 +102,7 @@ def showimage(data, number):
     plt.imshow(np.reshape(data, (28,28)))
     plt.savefig("eig" + str(number) + ".png")
     print("Saving image as eig" + str(number) + ".png...")
+    plt.close()
 
 
 
