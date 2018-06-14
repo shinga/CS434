@@ -2,7 +2,7 @@
 # @Date:   2018-04-25T17:07:51-07:00
 # @Filename: model_select.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-06-13T22:42:41-07:00
+# @Last modified time: 2018-06-13T22:48:07-07:00
 
 import matplotlib
 matplotlib.use('Agg')
@@ -213,7 +213,7 @@ def testError(dataTrain, dataTest, k, l):
     for i in range(dataTest.shape[0]):
         print i, k
         p = knn(dataTrain, dataTest[i], k, l)
-        rounded = lambda x: 1 if x > 0.28 else 0
+        rounded = lambda x: 1 if x >= 0.1 else 0
         result.append((p, rounded(p)))
 
     return result
@@ -230,39 +230,49 @@ def testError(dataTrain, dataTest, k, l):
 
 def main():
 
-    gentestinst = loadtestdata("general_test_instances.csv")
-    gentestinst = normalize(gentestinst)
+    sub2test = loadtestdata("subject2_instances.csv")
+    sub2test = normalize(sub2test)
+    sub7test = loadtestdata("subject7_instances.csv")
+    sub7test = normalize(sub7test)
     # (gentestinst, label5, w1) = readFile("Subject_2_part1.csv")
 
     # gentestinst = loadtestdata("sampleinstance_2.csv")
     # print gentest.shape
     # print gentestinst.shape
-    (train1, label1, w1) = readFile("Subject_1.csv")
-    (train2, label2, w2) = readFile("Subject_4.csv")
-    (train3, label3, w3) = readFile("Subject_6.csv")
-    (train4, label4, w4) = readFile("Subject_9.csv")
-    dataTrain = np.concatenate((train1, train2, train3, train4), axis=0)
-    l = np.concatenate((label1, label2, label3, label4), axis=0)
-    w = np.zeros((63, 1))
-    print dataTrain.shape
-    print l.shape
-    print w.shape
-    lt1 = readFile("list_1.csv")
-    lt2 = readFile("list_4.csv")
-    lt3 = readFile("list_6.csv")
-    lt4 = readFile("list_9.csv")
-    trainIndex = np.concatenate((lt1, lt2, lt3, lt4), axis=0)
+    (train2, label2, w2) = readFile("Subject_2_part1.csv")
+    (train7, label7, w7) = readFile("Subject_7_part1.csv")
+
+    w2 = np.zeros((63, 1))
+    w7 = np.zeros((63, 1))
+
     # dataTrain = np.hstack((trainIndex.reshape(trainIndex.shape[0], 1), dataTrain))
-    x = normalize(dataTrain)
-    print x[0]
-    print x[1]
+    x2 = normalize(train2)
+    x7 = normalize(train7)
+    print x2[0]
+    print x2[1]
+    print x7[0]
+    print x7[1]
 
 
-    (pos, posl) = findpos(x, l)
-    (neg, negl) = findrand(x, l)
+    (pos, posl) = findpos(x2, label2)
+    (neg, negl) = findrand(x2, label2)
     x = np.concatenate((pos, neg), axis=0)
     l = np.concatenate((posl, negl), axis=0)
     print x.shape
+
+    k = 20
+    test = testError(x, sub2test, k, l)
+    writepredictions(test,"individual1_pred2.csv")
+
+    (pos, posl) = findpos(x7, label7)
+    (neg, negl) = findrand(x7, label7)
+    x = np.concatenate((pos, neg), axis=0)
+    l = np.concatenate((posl, negl), axis=0)
+    print x.shape
+
+    k = 20
+    test = testError(x, sub2test, k, l)
+    writepredictions(test,"individual2_pred2.csv")
     # gentestinst = x
     # # print test[0]
     # # (correctVal, testVal, eud) = calcEuclDist(normData, normData[1])
@@ -277,10 +287,6 @@ def main():
     # test = testError(x, x, k)
     # print ("Training data with k = %d: %f" % (k, test))
 
-
-    k = 7
-    test = testError(x, gentestinst, k, l)
-    writepredictions(test,"generaltestknn" + str(k) + ".csv")
 
 
 

@@ -1,19 +1,15 @@
 # @Author: Arthur Shing
-# @Date:   2018-04-25T17:07:51-07:00
-# @Filename: model_select.py
+# @Date:   2018-04-12T17:23:28-07:00
+# @Filename: prob2.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-06-13T22:42:41-07:00
-
+# @Last modified time: 2018-06-13T23:00:04-07:00
 import matplotlib
 matplotlib.use('Agg')
 
-
 import numpy as np
-import matplotlib.pyplot as plt
-import math
 import csv
-from operator import itemgetter
-np.set_printoptions(threshold=np.nan)
+import matplotlib.pyplot as plt
+import time
 
 
 def readFile(fileName):
@@ -39,7 +35,6 @@ def readFile(fileName):
     return data
 
 
-
 def normalize(data):
     newData = data.T
     for column in range(newData.shape[0]):
@@ -59,6 +54,83 @@ def normalize(data):
             continue
     return newData.T
 
+# def predict1(row, w):
+#     yhat = 0
+#     for i in range(len(row)-1):
+#         yhat += w[i] * row[i]
+#     return 1.0 / (1.0 + np.exp(-yhat))
+#
+def checkAccuracy(x):
+    if x > 0.5 or x < -0.5:
+        return 0
+    else:
+        return 1
+
+
+def sigmoidFunct(w, x):
+    y = 1/(1 + np.exp(-np.dot(w.T, x)))
+    return y
+
+# Online gradient descent
+def train(data, learnRate, epoch, zeros, label):
+    w = zeros
+    acc = np.zeros((epoch,), dtype=float)
+    for e in range(epoch):
+        sumError = 0
+        for row in range(len(data)):
+            y = sigmoidFunct(w, data[row].reshape(63,1))
+            error = label[row] - y
+            sumError += error**2
+            odds = y * (1-y)
+            learnError = error * learnRate * odds
+
+            w = np.add(w, np.multiply(learnError, data[row].reshape(63,1))) # this took me 5ever
+            # why does the above work so much better than the one below?
+            # for pixel in range(len(data[row])):
+            #     w[pixel] = w[pixel] + (learnRate*error*odds*data[row][pixel])
+
+        acc[e] = test(data, label, w)
+        # print acc[e]
+        print('epoch: %d, learn rate: %.6f, SSE: %.6f, accuracy: %.6f' % (e, learnRate, sumError, acc[e]))
+    return (w, acc)
+
+
+# Batch gradient descent
+def trainBatch(data, learnRate, epoch, zeros, label):
+    w = zeros
+    acc = np.zeros((epoch,), dtype=float)
+    for e in range(epoch):
+        sumError = 0
+        nabla = w
+        for row in range(len(data)):
+            y = sigmoidFunct(w, data[row].reshape(63,1))
+            error = label[row] - y
+            sumError += error**2
+            odds = y * (1-y)
+            learnError = error * learnRate * odds
+
+            nabla = np.add(nabla, np.multiply(learnError, data[row].reshape(63,1))) # this took me 5ever
+
+        acc[e] = test(data, label, w)
+        w = nabla
+        # print acc[e]
+        print('epoch: %d, learn rate: %.6f, SSE: %.6f, accuracy: %.6f' % (e, learnRate, sumError, acc[e]))
+
+    return (w, acc)
+
+def test(x, l, coef):
+    numberWrong = 0
+    y = sigmoidFunct(coef, x.T)
+    y = y.T
+    for i in range(len(y)):
+        y[i] = round(y[i])
+        if y[i] != l[i]:
+            numberWrong += 1.0
+        else:
+            pass
+
+    return (1.0 - (numberWrong / len(y)))
+
 def predict(x, coef, roundamount):
 
     y = sigmoidFunct(coef, x.T)
@@ -77,6 +149,15 @@ def writepredictions(results, filename):
         for row in results:
             spamwriter.writerow(row)
 
+# def loadtestdata(fileName):
+#     data = np.loadtxt(fileName, delimiter=",")
+#     results = []
+#     instances = []
+#     for row in data:
+#         instance = np.reshape(row, (63,7)).T
+#         results.append(instance)
+#         instances.append(instance[-1])
+#     return (np.asarray(results), np.asarray(instances))
 
 def loadtestdata(fileName):
     data = np.loadtxt(fileName, delimiter=",")
@@ -92,7 +173,6 @@ def loadtestdata(fileName):
 
 def findpos(data, l):
     positiveData = np.zeros((1, data.shape[1]*7))
-    posl = []
     for i in range(data.shape[0]):
         if i > 7: #make sure there is 7 data points to grab from
             if l[i] == 1: # If data is a positive instance
@@ -108,14 +188,12 @@ def findpos(data, l):
                 newData = newData.T
                 newData = newData.reshape(1,(newData.shape[0])*7)
                 positiveData = np.concatenate((positiveData, newData), axis=0)
-                posl.append(l[i])
     positiveData = np.delete(positiveData, 0,0)
-    return (positiveData, np.asarray(posl))
+    return positiveData
 
 
 def findrand(data, l):
     plaindata = np.zeros((1, data.shape[1]*7))
-    posl = []
     for i in range(7, data.shape[0], 7):
         if i > 7: #make sure there is 7 data points to grab from
             if (l[i] == 0 and
@@ -137,103 +215,19 @@ def findrand(data, l):
                 newData = newData.T
                 newData = newData.reshape(1,(newData.shape[0])*7)
                 plaindata = np.concatenate((plaindata, newData), axis=0)
-                posl.append(l[i])
     plaindata = np.delete(plaindata, 0,0)
-    return (plaindata, np.asarray(posl))
-
-# one = training example
-# two = test
-# oneClass = training example class
-# twoClass = test case class (as reported)
-def euclideanDistance(one, two):
-    # one and two are arrays
-    oneClass = one[0]
-    twoClass = two[0]
-    dist = 0
-    distAdd = np.subtract(two, one)
-    distAdd = np.square(distAdd)
-    distAdd = distAdd[1:]
-    distAdd = np.sum(distAdd)
-    distAdd = np.sqrt(distAdd)
-    return (oneClass, twoClass, distAdd)
-
-def calcEuclDist(trainMatrix, test):
-    if (trainMatrix.shape[1] == test.shape[0]):
-        ans = np.apply_along_axis(euclideanDistance, 1, arr=trainMatrix, two=test)
-        correctVal = ans.T[0]
-        testVal = ans.T[1]
-        ed = ans.T[2]
-    return (correctVal, testVal, ed)
-
-
-def getNearestNeighbors(eud, correctVal, k):
-    indexList = []
-    for i in range(eud.shape[0]):
-        indexList.append((i, correctVal[i], eud[i]))
-    sortedIndex = sorted(indexList, key=itemgetter(2))
-
-    # if (sortedIndex[0][2] == 0):
-    #     return sortedIndex[1:(k+1)]
-    # else:
-    return sortedIndex[0:k]
-
-def getNearestNeighborsLOOXV(eud, correctVal, k):
-    indexList = []
-    for i in range(eud.shape[0]):
-        indexList.append((i, correctVal[i], eud[i]))
-    sortedIndex = sorted(indexList, key=itemgetter(2))
-
-    if (sortedIndex[0][2] == 0):
-        return sortedIndex[1:(k+1)]
-    else:
-        return sortedIndex[0:k]
-
-# dataTrain is the matrix of all traininig data
-# dataTest is a single data array
-def knn(dataTrain, dataTest, k, l):
-    predicted = 0
-    (correctVal, testVal, eud) = calcEuclDist(dataTrain, dataTest)
-    neighbors = getNearestNeighbors(eud, correctVal, k)
-    neVal = []
-    for j in neighbors:
-        # print neighbors
-        neVal.append(l[j[0]])
-
-    print sum(neVal)
-    if(sum(neVal) > 0):
-        predicted = np.mean(neVal)
-
-    return predicted
-
-
-def testError(dataTrain, dataTest, k, l):
-    wrong = 0
-    iterator = 0
-    result = []
-    for i in range(dataTest.shape[0]):
-        print i, k
-        p = knn(dataTrain, dataTest[i], k, l)
-        rounded = lambda x: 1 if x > 0.28 else 0
-        result.append((p, rounded(p)))
-
-    return result
-    #
-    #
-    #
-    #     if (l[i] != round(p)):
-    #         wrong += 1
-    #     iterator += 1
-    #     print(iterator)
-    # # testError = (wrong / (dataTest.shape[0]))
-    # return (float(wrong) / dataTest.shape[0])
-
+    return plaindata
 
 def main():
-
+    #stuff
+    # gentestinst1 = readFile("sampleinstance_1.csv")
+    # gentestinst2 = readFile("sampleinstance_2.csv")
+    # gentestinst3 = readFile("sampleinstance_3.csv")
+    # gentestinst4 = readFile("sampleinstance_4.csv")
+    # gentestinst5 = readFile("sampleinstance_5.csv")
+    # gentestinst = np.concatenate((gentestinst1, gentestinst2, gentestinst3, gentestinst4, gentestinst5), axis=0)
+    # (gentest,gentestinst) = loadtestdata("general_test_instances.csv")
     gentestinst = loadtestdata("general_test_instances.csv")
-    gentestinst = normalize(gentestinst)
-    # (gentestinst, label5, w1) = readFile("Subject_2_part1.csv")
-
     # gentestinst = loadtestdata("sampleinstance_2.csv")
     # print gentest.shape
     # print gentestinst.shape
@@ -258,52 +252,53 @@ def main():
     print x[1]
 
 
-    (pos, posl) = findpos(x, l)
-    (neg, negl) = findrand(x, l)
+    pos = findpos(x, l)
+    neg = findrand(x, l)
     x = np.concatenate((pos, neg), axis=0)
-    l = np.concatenate((posl, negl), axis=0)
     print x.shape
-    # gentestinst = x
-    # # print test[0]
-    # # (correctVal, testVal, eud) = calcEuclDist(normData, normData[1])
-    # # print correctVal.shape
 
-    # # (correctVal, testVal, eud) = calcEuclDist(normData, normDataTest[1])
+
     #
-    # test = getNearestNeighbors(eud, correctVal, k)
-    # test = knn(normData, normDataTest[1], k)
+    # (x, l, w, data) = loadData("usps-4-9-train.csv")
+    # (xTest, lTest, wTest, dataTest) = loadData("usps-4-9-test.csv")
+    # # for row in data[790:790]:
+    # #     yhat = predict1(row, w[0:])
+    # #     what = sigmoidFunct(w[0:], row[:-1].reshape(9,1))
+    # #     print("Expected=%.3f, Predicted=%.3f [%d] || %.3f [%d]" % (row[-1], yhat, round(yhat), what, round(what)))
+    learn = 0.000005
+    # learn = 0.000001
+    epoch = 20
+    (coef, accuracy) = train(x, learn, epoch, w, l)
+    (coefB, accuracyB) = trainBatch(x, 0.000001, epoch, w, l)
+    # print predict(gentestinst, coef)
+    # print predict(gentestinst, coefB)
+    writepredictions(predict(gentestinst, coef, .4),"general_pred1.csv")
+    # writepredictions(predict(gentestinst, coefB, .491), "generaltestlogregbatch.csv")
+
+    # TODO
+    # print coef
+    # print accuracy.shape
+    plot(range(epoch), accuracy, "acctrain.png")
+    plot(range(epoch), accuracyB, "acctrain.png")
+
+    # plot(test, "test.png")
+    # Equation: prediction g(z)
+        # g(z) = 1 / (1 + e^-(z)) where z is linear model a + bx + cx etc
+        # as linear model approaches -infinity, prediction = 0
+        # as linear model approaches 0, prediction = 0.5
+        # as linear model approaches infinity, prediction = 1
+
+def plot(x, y, fileName):
+    plt.plot(x, y)
+    plt.savefig(fileName)
+    return
 
 
-    # test = testError(x, x, k)
-    # print ("Training data with k = %d: %f" % (k, test))
-
-
-    k = 7
-    test = testError(x, gentestinst, k, l)
-    writepredictions(test,"generaltestknn" + str(k) + ".csv")
-
-
-
-    # for k in range(1, 53, 2):
-    #     print ("Getting data for k=%d..." % k)
-    #     train.append(testError(normData, normData, k))
-    #     # print ("Training data with k = %d: %f" % (k, test))
-    #     looxv.append(testErrorLOOXV(normData, normData, k))
-    #     # print ("Leave-one-out cross validation error with k = %d: %f" % (k, test))
-    #     test.append(testError(normData, normDataTest, k))
-    #     # print ("Testing data with k = %d: %f" % (k, test))
-    # plt.plot(range(1,53,2), train, 'bx-', label="Training Error")
-    # plt.plot(range(1,53,2), looxv, 'gx-', label="Leave-One-Out Error")
-    # plt.plot(range(1,53,2), test, 'rx-', label="Testing Error")
-    # plt.xlabel('k')
-    # plt.ylabel('Error rate')
-    # plt.legend(loc=4, prop={'size':10})
-    # plt.savefig("errors.png")
-
-
-
-
-
+# Basically imshow in matlab, turns numbers into a pic
+def showImage(w, name):
+    pic = plt.imshow(np.reshape(w, (16,16)).T)
+    plt.savefig(name)
+    return
 
 if __name__ == "__main__":
     main()

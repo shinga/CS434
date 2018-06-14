@@ -2,7 +2,7 @@
 # @Date:   2018-04-29T16:41:18-07:00
 # @Filename: decision_tree.py
 # @Last modified by:   Arthur Shing
-# @Last modified time: 2018-06-09T20:24:06-07:00
+# @Last modified time: 2018-06-13T19:21:51-07:00
 
 import matplotlib
 matplotlib.use('Agg')
@@ -45,11 +45,24 @@ class Node(object):
 
 def readFile(fileName):
     try:
-        data = np.loadtxt(fileName, delimiter=",", usecols=(1,2,3,4,5,6,7,8,9))
+        try:
+            data = np.loadtxt(fileName, delimiter=",", converters = {0: lambda s: float(s[11:13])}, usecols=(0,1,2,3,4,5,6,7,8))
+        except:
+            data = np.loadtxt(fileName, delimiter=",", usecols=(0,1,2,3,4,5,6,7,8))
+        s = data.shape
+        print str(s) + " loaded"
+        try:
+            labels = np.loadtxt(fileName, delimiter=",", usecols=(9))
+            labels = labels.reshape((labels.shape[0], 1))
+            w = np.zeros((s[1], 1))
+            return (data, labels, w)
+        except:
+            return data
     except:
         data = np.loadtxt(fileName, delimiter=",")
-    s = data.shape
-    print str(s) + " loaded"
+        s = data.shape
+        print str(s) + " loaded"
+        return data
     return data
 
 # Calculate entropy given probabilities of +1 (p1) and negative 1 (pn1)
@@ -242,11 +255,12 @@ def getTreeError(root):
 
 
 def main():
-    train1 = readFile("Subject_1.csv")
-    train2 = readFile("Subject_4.csv")
-    train3 = readFile("Subject_6.csv")
-    train4 = readFile("Subject_9.csv")
+    (train1, label1, w1) = readFile("Subject_1.csv")
+    (train2, label2, w2) = readFile("Subject_4.csv")
+    (train3, label3, w3) = readFile("Subject_6.csv")
+    (train4, label4, w4) = readFile("Subject_9.csv")
     dataTrain = np.concatenate((train1, train2, train3, train4), axis=0)
+    l = np.concatenate((label1, label2, label3, label4), axis=0)
     print dataTrain.shape
     lt1 = readFile("list_1.csv")
     lt2 = readFile("list_4.csv")
@@ -258,6 +272,7 @@ def main():
     #grab 7 data points if positive instance
     for i in range(dataTrain.shape[0]):
         if i > 7: #make sure there is 7 data points to grab from
+            print dataTrain[i]
             if dataTrain[i][-1] == 1: # If data is a positive instance
                 # print dataTrain[i].reshape(1,10)
                 newData = np.zeros((1, dataTrain.shape[1]))
@@ -269,7 +284,8 @@ def main():
                 newData = np.concatenate((newData, dataTrain[i-1].reshape(1,dataTrain.shape[1])), axis=0)
                 newData = np.concatenate((newData, dataTrain[i].reshape(1,dataTrain.shape[1])), axis=0)
                 newData = np.delete(newData, 0, 0)
-                newData = newData.reshape(1,(newData.shape[1])*7)
+                newData = newData.T
+                newData = newData.reshape(1,(newData.shape[0])*7)
                 positiveData = np.concatenate((positiveData, newData), axis=0)
 
     print positiveData.shape
